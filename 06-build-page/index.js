@@ -10,22 +10,41 @@ async function concatHtml() {
   await fsp.mkdir(dirCreate, { recursive: true });
   replaceHtml();
   copyAsset(dirAssets, dirToCopy);
-
+  concatFilesCss();
 }
 
 async function copyAsset(copyDir, copyToDir) {
-  console.log(copyDir);
   await fsp.rm(copyToDir,{ recursive: true, force: true });
   await fsp.mkdir(copyToDir, { recursive: true });
   const files = await fsp.readdir(copyDir, { withFileTypes: true });
-  console.log(files)
   for (const file of files) {
-    console.log(file)
     if (file.isFile()) {
       fsp.copyFile(path.join(copyDir, `${file.name}`), path.join(copyToDir, `${file.name}`));
     } else {
       copyAsset(path.join(copyDir, `${file.name}`), path.join(copyToDir, `${file.name}`));
     }
+  }
+}
+
+async function concatFilesCss() {
+  const style = 'style.css';
+  dirSourse = path.resolve(__dirname, 'styles');
+  //dirOutput = path.resolve(__dirname, 'project-dist');
+  dirOutputFiles = path.resolve(dirCreate, style);
+  const writeStream = fs.createWriteStream(dirOutputFiles, { encoding: "utf-8" });
+
+  const files = await fsp.readdir(dirSourse, { withFileTypes: true });
+
+  try {
+    for(let file of files) {
+      if(file.isFile() && path.extname(file.name) == '.css') {
+        filesSourse = path.resolve(dirSourse, file.name);
+        const contentFiles = await fsp.readFile(filesSourse, { encoding: "utf-8" });
+        writeStream.write(contentFiles + '\n');
+      }
+    }
+  } catch {
+    console.log("Don't merge files (");
   }
 }
 
