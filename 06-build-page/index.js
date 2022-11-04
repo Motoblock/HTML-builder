@@ -29,7 +29,6 @@ async function copyAsset(copyDir, copyToDir) {
 async function concatFilesCss() {
   const style = 'style.css';
   dirSourse = path.resolve(__dirname, 'styles');
-  //dirOutput = path.resolve(__dirname, 'project-dist');
   dirOutputFiles = path.resolve(dirCreate, style);
   const writeStream = fs.createWriteStream(dirOutputFiles, { encoding: "utf-8" });
 
@@ -46,6 +45,7 @@ async function concatFilesCss() {
   } catch {
     console.log("Don't merge files (");
   }
+  writeStream.close();
 }
 
 async function replaceHtml() {
@@ -75,7 +75,6 @@ async function replaceHtml() {
       });
     }
     });
-    
   });
 }
 concatHtml();

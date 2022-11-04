@@ -6,6 +6,10 @@ async function concatFiles() {
   const bundel = 'bundle.css';
   dirSourse = path.resolve(__dirname, 'styles');
   dirOutput = path.resolve(__dirname, 'project-dist');
+
+  await fsp.rm(dirOutput,{ recursive: true, force: true });
+  await fsp.mkdir(dirOutput, { recursive: true });
+
   dirOutputFiles = path.resolve(dirOutput, bundel);
   const writeStream = fs.createWriteStream(dirOutputFiles, { encoding: "utf-8" });
 
