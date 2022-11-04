@@ -21,6 +21,7 @@ async function copyFiles() {
   } catch {
       console.log('The file could not be copied');
   }
+  console.log('Сopying files was successful!');
 }
 
 copyFiles();
