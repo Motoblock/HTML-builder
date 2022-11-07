@@ -60,20 +60,20 @@ async function replaceHtml() {
   readHtmlStream.on('end', () => {
     components.forEach(function(component, i) {
       if (component.isFile() && path.extname(path.join(dirComponents, `${component.name}`)) === '.html') {
-      const readableStream = fs.createReadStream(path.resolve(dirComponents, component.name), 'utf-8');
-      let result = '';
-      let componentName = component.name.slice(0, -5);
-      let strsNumber = htmlContent.split('\n').find(str => str.includes(`{{${componentName}}}`)).split('{');
+        const readableStream = fs.createReadStream(path.resolve(dirComponents, component.name), 'utf-8');
+        let result = '';
+        let componentName = component.name.slice(0, -5);
+        let strsNumber = htmlContent.split('\n').find(str => str.includes(`{{${componentName}}}`)).split('{');
 
-      readableStream.on('data', chunk => result += chunk);
-      readableStream.on('end', () => {
-        result = result.split('\n').join(`\n${strsNumber[0]}`);
-        htmlContent = htmlContent.replace(`{{${componentName}}}`, result);
-        if (i == components.length - 1 ) {
-          writeHtmlStream.write(htmlContent);
-        }
-      });
-    }
+        readableStream.on('data', chunk => result += chunk);
+        readableStream.on('end', () => {
+          result = result.split('\n').join(`\n${strsNumber[0]}`);
+          htmlContent = htmlContent.replaceAll(`{{${componentName}}}`, result);
+          if (i == components.length - 1 ) {
+            writeHtmlStream.write(htmlContent);
+          }
+        });
+      }
     });
   });
 }
