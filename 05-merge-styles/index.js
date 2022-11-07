@@ -27,5 +27,6 @@ async function concatFiles() {
   } catch {
     console.log("Don't merge files (");
   }
+  writeStream.close();
 }
 concatFiles();

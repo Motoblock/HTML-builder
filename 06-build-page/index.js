@@ -7,10 +7,15 @@
 
 async function concatHtml() {
   await fsp.rm(dirCreate,{ recursive: true, force: true });
+  
   await fsp.mkdir(dirCreate, { recursive: true });
-  replaceHtml();
-  copyAsset(dirAssets, dirToCopy);
-  concatFilesCss();
+  console.log('Create dir');
+  await replaceHtml();
+  console.log("Create tamplate");
+  await copyAsset(dirAssets, dirToCopy);
+  console.log("Copy");
+  await concatFilesCss();
+  console.log("Create CSS");
 }
 
 async function copyAsset(copyDir, copyToDir) {
@@ -50,31 +55,17 @@ async function concatFilesCss() {
 
 async function replaceHtml() {
   const dirComponents = path.resolve(__dirname, 'components');
-  const readHtmlStream = fs.createReadStream(path.resolve(__dirname,'template.html'), 'utf8');
-  const writeHtmlStream = fs.createWriteStream(path.resolve(dirCreate, 'index.html'));
-
+  const html = await fsp.readFile(path.resolve(__dirname,'template.html'));
   const components = await fsp.readdir(dirComponents, { withFileTypes: true });
+  let htmlContent = html.toString();
 
-  let htmlContent = '';
-  readHtmlStream.on('data', chunk => htmlContent += chunk);
-  readHtmlStream.on('end', () => {
-    components.forEach(function(component, i) {
-      if (component.isFile() && path.extname(path.join(dirComponents, `${component.name}`)) === '.html') {
-        const readableStream = fs.createReadStream(path.resolve(dirComponents, component.name), 'utf-8');
-        let result = '';
-        let componentName = component.name.slice(0, -5);
-        let strsNumber = htmlContent.split('\n').find(str => str.includes(`{{${componentName}}}`)).split('{');
-
-        readableStream.on('data', chunk => result += chunk);
-        readableStream.on('end', () => {
-          result = result.split('\n').join(`\n${strsNumber[0]}`);
-          htmlContent = htmlContent.replaceAll(`{{${componentName}}}`, result);
-          if (i == components.length - 1 ) {
-            writeHtmlStream.write(htmlContent);
-          }
-        });
-      }
-    });
-  });
+  for(let component of components) {
+    if (component.isFile() && path.extname(path.resolve(dirComponents, `${component.name}`)) == '.html') {
+      let componentName = component.name.slice(0, -5);
+      let componentContent = await fsp.readFile(path.resolve(dirComponents, component.name));
+      htmlContent = htmlContent.replaceAll(`{{${componentName}}}`,`\n${componentContent}\n`);
+    }
+  }
+  await fsp.writeFile(path.resolve(dirCreate, 'index.html'), htmlContent);
 }
 concatHtml();
